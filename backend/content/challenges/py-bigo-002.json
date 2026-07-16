@@ -1,0 +1,15 @@
+{
+  "id": "py-bigo-002",
+  "type": "big-o",
+  "track": "python",
+  "difficulty": 2,
+  "skillNodes": ["algorithms.arrays", "complexity.time"],
+  "payload": {
+    "language": "python",
+    "prompt": "time",
+    "code": "def has_dup(arr):\n    for i in range(len(arr)):\n        for j in range(i + 1, len(arr)):\n            if arr[i] == arr[j]:\n                return True\n    return False",
+    "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"]
+  },
+  "answer": { "correct": "O(n^2)" },
+  "explanation": "Every pair of indices is compared by the nested loops, giving O(n^2) in the worst case."
+}

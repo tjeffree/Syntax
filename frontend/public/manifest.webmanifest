@@ -1,0 +1,19 @@
+{
+  "name": "Syntax — daily code challenges",
+  "short_name": "syntax",
+  "description": "Daily developer micro-challenges. Fight skill atrophy.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1C222B",
+  "theme_color": "#337AB7",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

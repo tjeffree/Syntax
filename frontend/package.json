@@ -1,0 +1,17 @@
+{
+  "name": "syntax-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Syntax — daily developer micro-challenges (PWA)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  }
+}

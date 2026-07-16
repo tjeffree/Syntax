@@ -1,0 +1,13 @@
+{
+  "id": "py-bug-001",
+  "type": "bug-spot",
+  "track": "python",
+  "difficulty": 1,
+  "skillNodes": ["python.functions", "python.arithmetic"],
+  "payload": {
+    "language": "python",
+    "code": "def average(nums):\n    total = 0\n    for n in nums:\n        total += n\n    return total / len(nums) + 1"
+  },
+  "answer": { "line": 5 },
+  "explanation": "The stray `+ 1` skews every result. The mean is just `total / len(nums)`."
+}

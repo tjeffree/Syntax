@@ -1,0 +1,13 @@
+{
+  "id": "js-bug-002",
+  "type": "bug-spot",
+  "track": "javascript",
+  "difficulty": 2,
+  "skillNodes": ["javascript.operators", "javascript.conditionals"],
+  "payload": {
+    "language": "javascript",
+    "code": "function contains(arr, target) {\n  for (let i = 0; i < arr.length; i++) {\n    if (arr[i] = target) {\n      return true;\n    }\n  }\n  return false;\n}"
+  },
+  "answer": { "line": 3 },
+  "explanation": "`arr[i] = target` assigns instead of comparing, so the condition is truthy every iteration. Use `===`."
+}

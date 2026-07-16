@@ -1,0 +1,15 @@
+{
+  "id": "py-bigo-001",
+  "type": "big-o",
+  "track": "python",
+  "difficulty": 2,
+  "skillNodes": ["algorithms.search", "complexity.time"],
+  "payload": {
+    "language": "python",
+    "prompt": "time",
+    "code": "def search(arr, target):\n    lo, hi = 0, len(arr) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1",
+    "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"]
+  },
+  "answer": { "correct": "O(log n)" },
+  "explanation": "Binary search halves the search window each iteration, so it runs in O(log n) time."
+}

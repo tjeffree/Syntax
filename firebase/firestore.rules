@@ -1,0 +1,65 @@
+rules_version = '2';
+
+// Security Rules for Syntax (GDD §6, §8).
+//
+// Architecture note: in this design the BROWSER never talks to Firestore
+// directly — all reads/writes go through the FastAPI backend, which uses the
+// Firebase Admin SDK and bypasses these rules. So these rules are pure
+// defense-in-depth: they lock the database down for any client SDK access.
+//
+//   * challenges  — answers live here; NO client access, ever.
+//   * runs        — score-bearing; backend-only.
+//   * leaderboards— world-readable (for a public daily board), backend-only writes.
+//   * users       — a client may read its own doc and edit only cosmetic fields.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSelf(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Only cosmetic fields may change from the client; score-bearing state
+    // (streak, tracks, xp) is written by the backend only.
+    function onlyCosmeticFields() {
+      let editable = ['displayName', 'display_name', 'handle', 'photoURL', 'photo_url'];
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(editable);
+    }
+
+    match /users/{uid} {
+      allow read: if isSelf(uid);
+      allow update: if isSelf(uid) && onlyCosmeticFields();
+      allow create, delete: if false; // backend creates user docs
+    }
+
+    match /challenges/{id} {
+      allow read, write: if false; // answers never leave the server
+    }
+
+    match /runs/{runId} {
+      allow read, write: if false; // score-bearing; backend-only
+    }
+
+    match /dailyStacks/{date} {
+      allow read, write: if false;
+    }
+
+    match /leaderboards/{doc} {
+      allow read: if true;         // public daily board
+      allow write: if false;       // backend-only
+      match /entries/{uid} {
+        allow read: if true;
+        allow write: if false;
+      }
+    }
+
+    // follows/ is Phase 2 (friends leaderboard); a user manages its own list.
+    match /follows/{uid}/following/{target} {
+      allow read, write: if isSelf(uid);
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

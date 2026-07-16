@@ -1,0 +1,15 @@
+{
+  "id": "js-bigo-002",
+  "type": "big-o",
+  "track": "javascript",
+  "difficulty": 2,
+  "skillNodes": ["algorithms.arrays", "complexity.time"],
+  "payload": {
+    "language": "javascript",
+    "prompt": "time",
+    "code": "function hasDuplicate(arr) {\n  for (let i = 0; i < arr.length; i++) {\n    for (let j = i + 1; j < arr.length; j++) {\n      if (arr[i] === arr[j]) return true;\n    }\n  }\n  return false;\n}",
+    "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"]
+  },
+  "answer": { "correct": "O(n^2)" },
+  "explanation": "The nested loops compare every pair of elements, so the worst case is O(n^2)."
+}

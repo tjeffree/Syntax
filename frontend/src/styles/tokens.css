@@ -1,0 +1,68 @@
+/* Design tokens — see docs/STYLE_GUIDE.md §8. Early-2010s dev tool aesthetic. */
+:root {
+  /* chrome — light (default) */
+  --bg-page: #f4f5f7;
+  --bg-panel: #ffffff;
+  --bg-inset: #edeff2;
+  --border: #d4d9de;
+  --border-strong: #b8c0c8;
+  --text: #333333;
+  --text-muted: #707880;
+  --text-faint: #9aa3ab;
+  --blue: #337ab7;
+  --blue-dark: #2a6496;
+  --blue-darker: #1f4e77;
+  --blue-link: #0088cc;
+  --blue-wash: #e8f1f8;
+  --focus-ring: rgba(51, 122, 183, 0.45);
+  --green: #5cb85c;
+  --green-wash: #eaf5ea;
+  --amber: #f0ad4e;
+  --amber-wash: #fcf4e6;
+  --red: #d9534f;
+  --red-wash: #faeaea;
+
+  /* code surface — theme independent (always dark) */
+  --code-bg: #1e1e1e;
+  --code-text: #d4d4d4;
+  --code-gutter: #858585;
+  --code-line-hover: #2a2d2e;
+  --code-line-selected: #264f78;
+  --code-block-border: #3c3c3c;
+  --syn-keyword: #569cd6;
+  --syn-string: #ce9178;
+  --syn-number: #b5cea8;
+  --syn-comment: #6a9955;
+  --syn-function: #dcdcaa;
+
+  /* type, shape */
+  --font-ui: "Helvetica Neue", Helvetica, Arial, "Segoe UI", sans-serif;
+  --font-code: Consolas, Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
+  --radius-s: 3px;
+  --radius-m: 4px;
+
+  /* spacing scale (5px grid) */
+  --sp-1: 5px;
+  --sp-2: 10px;
+  --sp-3: 15px;
+  --sp-4: 20px;
+  --sp-6: 30px;
+  --sp-8: 40px;
+}
+
+[data-theme="dark"] {
+  --bg-page: #1c222b;
+  --bg-panel: #232a35;
+  --bg-inset: #1a2028;
+  --border: #39424e;
+  --border-strong: #4a5563;
+  --text: #d6dee8;
+  --text-muted: #8c97a4;
+  --text-faint: #5e6873;
+  --blue: #4e97d1;
+  --blue-link: #58aee0;
+  --blue-wash: #25384c;
+  --green-wash: #1e3320;
+  --amber-wash: #33290f;
+  --red-wash: #3a1f1f;
+}

@@ -1,0 +1,13 @@
+{
+  "id": "py-bug-002",
+  "type": "bug-spot",
+  "track": "python",
+  "difficulty": 2,
+  "skillNodes": ["python.loops", "python.edge-cases"],
+  "payload": {
+    "language": "python",
+    "code": "def find_max(nums):\n    max_val = 0\n    for n in nums:\n        if n > max_val:\n            max_val = n\n    return max_val"
+  },
+  "answer": { "line": 2 },
+  "explanation": "Seeding `max_val = 0` returns 0 for an all-negative list. Initialise to `nums[0]` (or `float('-inf')`)."
+}

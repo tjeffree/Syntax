@@ -1,0 +1,31 @@
+{
+  "id": "py-parsons-001",
+  "type": "parsons",
+  "track": "python",
+  "difficulty": 2,
+  "skillNodes": ["python.loops", "python.conditionals"],
+  "payload": {
+    "language": "python",
+    "indent": true,
+    "maxIndent": 3,
+    "blocks": [
+      { "id": "b1", "code": "def sum_evens(nums):" },
+      { "id": "b2", "code": "total = 0" },
+      { "id": "b3", "code": "for n in nums:" },
+      { "id": "b4", "code": "if n % 2 == 0:" },
+      { "id": "b5", "code": "total += n" },
+      { "id": "b6", "code": "return total" }
+    ]
+  },
+  "answer": {
+    "solution": [
+      { "id": "b1", "indent": 0 },
+      { "id": "b2", "indent": 1 },
+      { "id": "b3", "indent": 1 },
+      { "id": "b4", "indent": 2 },
+      { "id": "b5", "indent": 3 },
+      { "id": "b6", "indent": 1 }
+    ]
+  },
+  "explanation": "Accumulate into `total`, guard with the `% 2` test one level deeper, and return at function level."
+}

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://syntax.game/schema/challenge.schema.json",
+  "title": "Syntax challenge",
+  "description": "Authoring/server format for a single challenge. The `answer` block is server-only and never ships to the client (GDD §8).",
+  "type": "object",
+  "required": ["id", "type", "track", "difficulty", "skillNodes", "payload", "answer", "explanation"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "type": { "enum": ["bug-spot", "parsons", "big-o"] },
+    "track": { "enum": ["python", "javascript"] },
+    "difficulty": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "skillNodes": { "type": "array", "items": { "type": "string" } },
+    "explanation": { "type": "string", "minLength": 1 },
+    "payload": { "type": "object" },
+    "answer": { "type": "object" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "bug-spot" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["language", "code"],
+            "additionalProperties": false,
+            "properties": {
+              "language": { "type": "string" },
+              "code": { "type": "string", "minLength": 1 }
+            }
+          },
+          "answer": {
+            "type": "object",
+            "required": ["line"],
+            "additionalProperties": false,
+            "properties": { "line": { "type": "integer", "minimum": 1 } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "parsons" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["language", "blocks"],
+            "additionalProperties": false,
+            "properties": {
+              "language": { "type": "string" },
+              "indent": { "type": "boolean" },
+              "maxIndent": { "type": "integer", "minimum": 0 },
+              "blocks": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "code"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": { "type": "string" },
+                    "code": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "answer": {
+            "type": "object",
+            "required": ["solution"],
+            "additionalProperties": false,
+            "properties": {
+              "solution": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "indent"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": { "type": "string" },
+                    "indent": { "type": "integer", "minimum": 0 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "big-o" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["language", "code", "prompt", "options"],
+            "additionalProperties": false,
+            "properties": {
+              "language": { "type": "string" },
+              "code": { "type": "string", "minLength": 1 },
+              "prompt": { "enum": ["time", "space"] },
+              "options": {
+                "type": "array",
+                "minItems": 3,
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "answer": {
+            "type": "object",
+            "required": ["correct"],
+            "additionalProperties": false,
+            "properties": { "correct": { "type": "string" } }
+          }
+        }
+      }
+    }
+  ]
+}

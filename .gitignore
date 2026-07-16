@@ -1,0 +1,21 @@
+# Python
+**/.venv/
+**/__pycache__/
+*.pyc
+**/.pytest_cache/
+backend/.data/
+
+# Node
+**/node_modules/
+frontend/dist/
+**/.vite/
+
+# Env & secrets
+**/.env
+**/.env.local
+**/serviceAccount.json
+firebase/.firebaserc
+
+# OS
+.DS_Store
+Thumbs.db

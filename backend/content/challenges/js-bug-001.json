@@ -1,0 +1,13 @@
+{
+  "id": "js-bug-001",
+  "type": "bug-spot",
+  "track": "javascript",
+  "difficulty": 1,
+  "skillNodes": ["javascript.loops", "javascript.arrays"],
+  "payload": {
+    "language": "javascript",
+    "code": "function average(nums) {\n  let total = 0;\n  for (let i = 0; i <= nums.length; i++) {\n    total += nums[i];\n  }\n  return total / nums.length;\n}"
+  },
+  "answer": { "line": 3 },
+  "explanation": "`i <= nums.length` reads one past the end (undefined), poisoning the sum with NaN. Use `i < nums.length`."
+}

@@ -1,0 +1,4 @@
+# Only needed when AUTH_MODE=firebase or STORE_MODE=firestore (i.e. deploying
+# against a real Firebase project). Installed on top of requirements.txt.
+-r requirements.txt
+firebase-admin==6.6.0
