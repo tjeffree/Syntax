@@ -1,0 +1,13 @@
+{
+  "id": "py-bug-004",
+  "type": "bug-spot",
+  "track": "python",
+  "difficulty": 3,
+  "skillNodes": ["python.loops", "python.lists"],
+  "payload": {
+    "language": "python",
+    "code": "def remove_negatives(nums):\n    for n in nums:\n        if n < 0:\n            nums.remove(n)\n    return nums"
+  },
+  "answer": { "line": 3 },
+  "explanation": "Removing items while iterating over the same list shifts later elements and can skip negatives. Build a filtered list instead."
+}

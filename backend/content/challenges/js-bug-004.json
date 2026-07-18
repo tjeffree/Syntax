@@ -1,0 +1,13 @@
+{
+  "id": "js-bug-004",
+  "type": "bug-spot",
+  "track": "javascript",
+  "difficulty": 3,
+  "skillNodes": ["javascript.arrays", "javascript.loops"],
+  "payload": {
+    "language": "javascript",
+    "code": "function removeNegatives(nums) {\n  for (let i = 0; i < nums.length; i++) {\n    if (nums[i] < 0) {\n      nums.splice(i, 1);\n    }\n  }\n  return nums;\n}"
+  },
+  "answer": { "line": 4 },
+  "explanation": "After `splice`, the next item shifts into index `i`, but the loop advances and skips it. Decrement `i` or create a filtered array."
+}

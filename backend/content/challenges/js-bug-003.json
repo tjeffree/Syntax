@@ -1,0 +1,13 @@
+{
+  "id": "js-bug-003",
+  "type": "bug-spot",
+  "track": "javascript",
+  "difficulty": 2,
+  "skillNodes": ["javascript.strings", "javascript.operators"],
+  "payload": {
+    "language": "javascript",
+    "code": "function isEmpty(text) {\n  return text.trim === \"\";\n}"
+  },
+  "answer": { "line": 2 },
+  "explanation": "`trim` is a method, so it must be called. Use `text.trim() === \"\"` to compare the trimmed string."
+}

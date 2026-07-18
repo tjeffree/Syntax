@@ -1,0 +1,31 @@
+{
+  "id": "py-parsons-004",
+  "type": "parsons",
+  "track": "python",
+  "difficulty": 3,
+  "skillNodes": ["python.conditionals", "python.functions"],
+  "payload": {
+    "language": "python",
+    "indent": true,
+    "maxIndent": 2,
+    "blocks": [
+      { "id": "b1", "code": "def describe_temperature(temp):" },
+      { "id": "b2", "code": "if temp < 0:" },
+      { "id": "b3", "code": "return \"freezing\"" },
+      { "id": "b4", "code": "if temp < 20:" },
+      { "id": "b5", "code": "return \"cool\"" },
+      { "id": "b6", "code": "return \"warm\"" }
+    ]
+  },
+  "answer": {
+    "solution": [
+      { "id": "b1", "indent": 0 },
+      { "id": "b2", "indent": 1 },
+      { "id": "b3", "indent": 2 },
+      { "id": "b4", "indent": 1 },
+      { "id": "b5", "indent": 2 },
+      { "id": "b6", "indent": 1 }
+    ]
+  },
+  "explanation": "Check freezing first, then cool temperatures; the final return is the function-level default."
+}

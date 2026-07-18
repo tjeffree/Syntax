@@ -1,0 +1,33 @@
+{
+  "id": "js-parsons-003",
+  "type": "parsons",
+  "track": "javascript",
+  "difficulty": 2,
+  "skillNodes": ["javascript.loops", "javascript.arrays"],
+  "payload": {
+    "language": "javascript",
+    "indent": true,
+    "maxIndent": 2,
+    "blocks": [
+      { "id": "b1", "code": "function doubleAll(nums) {" },
+      { "id": "b2", "code": "const result = [];" },
+      { "id": "b3", "code": "for (const n of nums) {" },
+      { "id": "b4", "code": "result.push(n * 2);" },
+      { "id": "b5", "code": "}" },
+      { "id": "b6", "code": "return result;" },
+      { "id": "b7", "code": "}" }
+    ]
+  },
+  "answer": {
+    "solution": [
+      { "id": "b1", "indent": 0 },
+      { "id": "b2", "indent": 1 },
+      { "id": "b3", "indent": 1 },
+      { "id": "b4", "indent": 2 },
+      { "id": "b5", "indent": 1 },
+      { "id": "b6", "indent": 1 },
+      { "id": "b7", "indent": 0 }
+    ]
+  },
+  "explanation": "Initialise the result list, add each doubled number inside the loop, then return it after the loop closes."
+}

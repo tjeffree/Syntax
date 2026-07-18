@@ -1,0 +1,15 @@
+{
+  "id": "py-bigo-004",
+  "type": "big-o",
+  "track": "python",
+  "difficulty": 3,
+  "skillNodes": ["algorithms.arrays", "complexity.space"],
+  "payload": {
+    "language": "python",
+    "prompt": "space",
+    "code": "def squares(values):\n    result = []\n    for value in values:\n        result.append(value * value)\n    return result",
+    "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"]
+  },
+  "answer": { "correct": "O(n)" },
+  "explanation": "The output list stores one square per input value, so the additional space grows linearly."
+}

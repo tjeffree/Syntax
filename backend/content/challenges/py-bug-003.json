@@ -1,0 +1,13 @@
+{
+  "id": "py-bug-003",
+  "type": "bug-spot",
+  "track": "python",
+  "difficulty": 2,
+  "skillNodes": ["python.strings", "python.conditionals"],
+  "payload": {
+    "language": "python",
+    "code": "def is_palindrome(text):\n    cleaned = text.lower().replace(\" \", \"\")\n    return cleaned == text[::-1]"
+  },
+  "answer": { "line": 3 },
+  "explanation": "The comparison reverses the original text instead of the cleaned, lower-case version. Compare `cleaned` with `cleaned[::-1]`."
+}

@@ -1,0 +1,15 @@
+{
+  "id": "js-bigo-003",
+  "type": "big-o",
+  "track": "javascript",
+  "difficulty": 2,
+  "skillNodes": ["algorithms.sorting", "complexity.time"],
+  "payload": {
+    "language": "javascript",
+    "prompt": "time",
+    "code": "function sortedUnique(values) {\n  return [...new Set(values)].sort((a, b) => a - b);\n}",
+    "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"]
+  },
+  "answer": { "correct": "O(n log n)" },
+  "explanation": "Building the set is linear, while sorting the unique values takes O(n log n) in the worst case."
+}

@@ -1,0 +1,15 @@
+{
+  "id": "js-bigo-004",
+  "type": "big-o",
+  "track": "javascript",
+  "difficulty": 3,
+  "skillNodes": ["algorithms.arrays", "complexity.space"],
+  "payload": {
+    "language": "javascript",
+    "prompt": "space",
+    "code": "function squares(values) {\n  const result = [];\n  for (const value of values) {\n    result.push(value * value);\n  }\n  return result;\n}",
+    "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"]
+  },
+  "answer": { "correct": "O(n)" },
+  "explanation": "The result array holds one value for each input element, requiring O(n) additional space."
+}

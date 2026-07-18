@@ -1,0 +1,37 @@
+{
+  "id": "js-parsons-004",
+  "type": "parsons",
+  "track": "javascript",
+  "difficulty": 3,
+  "skillNodes": ["javascript.conditionals", "javascript.functions"],
+  "payload": {
+    "language": "javascript",
+    "indent": true,
+    "maxIndent": 2,
+    "blocks": [
+      { "id": "b1", "code": "function describeTemperature(temp) {" },
+      { "id": "b2", "code": "if (temp < 0) {" },
+      { "id": "b3", "code": "return \"freezing\";" },
+      { "id": "b4", "code": "}" },
+      { "id": "b5", "code": "if (temp < 20) {" },
+      { "id": "b6", "code": "return \"cool\";" },
+      { "id": "b7", "code": "}" },
+      { "id": "b8", "code": "return \"warm\";" },
+      { "id": "b9", "code": "}" }
+    ]
+  },
+  "answer": {
+    "solution": [
+      { "id": "b1", "indent": 0 },
+      { "id": "b2", "indent": 1 },
+      { "id": "b3", "indent": 2 },
+      { "id": "b4", "indent": 1 },
+      { "id": "b5", "indent": 1 },
+      { "id": "b6", "indent": 2 },
+      { "id": "b7", "indent": 1 },
+      { "id": "b8", "indent": 1 },
+      { "id": "b9", "indent": 0 }
+    ]
+  },
+  "explanation": "Check freezing first, then cool temperatures; the final return supplies the warm default at function scope."
+}

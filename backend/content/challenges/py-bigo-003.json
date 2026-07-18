@@ -1,0 +1,15 @@
+{
+  "id": "py-bigo-003",
+  "type": "big-o",
+  "track": "python",
+  "difficulty": 2,
+  "skillNodes": ["algorithms.sorting", "complexity.time"],
+  "payload": {
+    "language": "python",
+    "prompt": "time",
+    "code": "def sorted_unique(values):\n    return sorted(set(values))",
+    "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"]
+  },
+  "answer": { "correct": "O(n log n)" },
+  "explanation": "Creating the set is O(n), and sorting up to n unique values dominates at O(n log n)."
+}
