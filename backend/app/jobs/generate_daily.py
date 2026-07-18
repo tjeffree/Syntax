@@ -6,7 +6,7 @@ from datetime import date, timedelta
 
 from ..config import get_settings
 from ..firestore_client import get_firestore_client
-from ..generation import TRACKS, challenge_document, fingerprint, generate_raw_stack, validate_daily_stack
+from ..generation import TRACKS, challenge_document, fingerprint, generate_valid_stack, validate_daily_stack
 
 
 def _recent_fingerprints(db, retention_days: int) -> set[str]:
@@ -69,8 +69,8 @@ def main() -> None:
     args = parser.parse_args()
     settings = get_settings()
     db = get_firestore_client(settings)
-    fingerprints = sorted(_recent_fingerprints(db, settings.daily_stack_retention_days))
-    candidates = generate_raw_stack(args.date, settings, existing_fingerprints=fingerprints)
+    fingerprints = _recent_fingerprints(db, settings.daily_stack_retention_days)
+    candidates = generate_valid_stack(args.date, settings, existing_fingerprints=fingerprints)
     changed = publish(args.date, candidates, dry_run=args.dry_run)
     print(f"daily stack {args.date}: {'validated' if args.dry_run else ('published' if changed else 'already published')}")
 

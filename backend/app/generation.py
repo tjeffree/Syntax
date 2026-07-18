@@ -37,6 +37,12 @@ it to "{game_date}". Every object must include a server-only answer and a
 short, accurate explanation. Challenges must be solvable from their payload,
 have one unambiguous answer, and be distinct from the recent fingerprints below.
 
+Enforce these constraints exactly, or the stack is rejected:
+- bug-spot: answer.line is a 1-based line number that exists within payload.code.
+- big-o: answer.correct is one of payload.options, verbatim.
+- parsons: payload.maxIndent must be at least the deepest indent used in
+  answer.solution, and answer.solution ids must match payload.blocks ids exactly.
+
 Challenge schema:
 {challenge_schema}
 
@@ -112,6 +118,36 @@ def validate_daily_stack(raw_challenges: list[dict[str, Any]], game_date: str, s
     if actual != expected:
         raise ContentError("daily stack must have one required type for each track")
     return validated
+
+
+def generate_valid_stack(
+    game_date: str,
+    settings: Settings | None = None,
+    *,
+    existing_fingerprints: set[str] | None = None,
+    max_attempts: int = 3,
+) -> list[dict[str, Any]]:
+    """Generate a stack, regenerating on rejection up to ``max_attempts`` times.
+
+    A single model call intermittently emits one challenge that violates a
+    semantic gate (an unreachable Parsons indent, an out-of-range bug line).
+    An unattended daily job has no human to re-run it, so a bad stack should
+    self-heal within one execution rather than fail the whole day. The gates in
+    :func:`validate_daily_stack` stay authoritative — we retry, never relax.
+    """
+    settings = settings or get_settings()
+    fingerprints = set(existing_fingerprints or set())
+    last_error: ContentError | None = None
+    for attempt in range(1, max_attempts + 1):
+        candidates = generate_raw_stack(game_date, settings, existing_fingerprints=sorted(fingerprints))
+        try:
+            validate_daily_stack(candidates, game_date, settings, existing_fingerprints=fingerprints)
+            return candidates
+        except ContentError as exc:
+            last_error = exc
+            print(f"stack {game_date}: attempt {attempt}/{max_attempts} rejected: {exc}")
+    assert last_error is not None  # loop ran at least once, so a failure was recorded
+    raise last_error
 
 
 def challenge_document(challenge: Challenge, game_date: str, model: str) -> dict[str, Any]:

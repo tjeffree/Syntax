@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import pytest
 
+import app.generation as gen
 from app.content import ContentError
-from app.generation import challenge_document, fingerprint, validate_daily_stack
+from app.generation import challenge_document, fingerprint, generate_valid_stack, validate_daily_stack
 
 
 DATE = "2026-07-19"
@@ -65,3 +66,35 @@ def test_generated_stack_rejects_duplicate_track_type(env):
     candidates[1] = _challenge("python", "bug-spot")
     with pytest.raises(ContentError):
         validate_daily_stack(candidates, DATE)
+
+
+def _bad_stack() -> list[dict]:
+    stack = _stack()
+    stack[1]["answer"]["solution"][0]["indent"] = 5  # exceeds maxIndent -> rejected
+    return stack
+
+
+def test_generate_valid_stack_retries_until_valid(env, monkeypatch):
+    attempts = {"n": 0}
+
+    def fake_generate(game_date, settings=None, *, existing_fingerprints=None):
+        attempts["n"] += 1
+        return _bad_stack() if attempts["n"] == 1 else _stack()
+
+    monkeypatch.setattr(gen, "generate_raw_stack", fake_generate)
+    candidates = generate_valid_stack(DATE, max_attempts=3)
+    assert attempts["n"] == 2  # regenerated once after the first stack was rejected
+    assert len(candidates) == 6
+
+
+def test_generate_valid_stack_gives_up_after_max_attempts(env, monkeypatch):
+    attempts = {"n": 0}
+
+    def fake_generate(game_date, settings=None, *, existing_fingerprints=None):
+        attempts["n"] += 1
+        return _bad_stack()
+
+    monkeypatch.setattr(gen, "generate_raw_stack", fake_generate)
+    with pytest.raises(ContentError):
+        generate_valid_stack(DATE, max_attempts=2)
+    assert attempts["n"] == 2  # bounded, does not loop forever
