@@ -14,22 +14,14 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 
 from ..config import get_settings
+from ..firestore_client import get_firestore_client
 from .base import Store
 
 
 class FirestoreStore(Store):
     def __init__(self) -> None:
-        import firebase_admin
-        from firebase_admin import credentials, firestore
-
         settings = get_settings()
-        if not firebase_admin._apps:
-            if settings.firebase_credentials:
-                cred = credentials.Certificate(settings.firebase_credentials)
-                firebase_admin.initialize_app(cred)
-            else:
-                firebase_admin.initialize_app()
-        self._db = firestore.client()
+        self._db = get_firestore_client(settings)
 
     @staticmethod
     def _run_key(uid: str, date: str, track: str) -> str:

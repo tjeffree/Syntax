@@ -4,7 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..auth import AuthedUser, get_current_user
-from ..content import ContentIndex, get_content
+from ..content_repository import DailyStackUnavailable, ChallengeRepository, get_challenge_repository, unavailable_status
 from ..models import (
     ChallengeResult,
     CompleteRequest,
@@ -13,7 +13,6 @@ from ..models import (
     TrackXp,
 )
 from ..scoring import is_implausible, level_for_xp, update_streak, xp_for_score
-from ..seed import build_stack
 from ..service import get_or_create_user, rank_entries, validate_date, validate_track
 from ..store import Store, get_store
 from ..time_source import iso, now
@@ -26,13 +25,18 @@ def complete(
     body: CompleteRequest,
     auth: AuthedUser = Depends(get_current_user),
     store: Store = Depends(get_store),
-    index: ContentIndex = Depends(get_content),
+    repository: ChallengeRepository = Depends(get_challenge_repository),
 ) -> CompleteResponse:
     validate_date(body.date)
     validate_track(body.track)
 
     user = get_or_create_user(store, auth)
-    _, ids = build_stack(index, body.date, body.track)
+    try:
+        stack = repository.get_stack(body.date, body.track)
+    except DailyStackUnavailable as exc:
+        raise HTTPException(status_code=unavailable_status(body.date), detail=str(exc)) from exc
+    ids = stack.challenge_ids
+    challenge_by_id = {challenge.id: challenge for challenge in stack.challenges}
     run = store.get_run(user["uid"], body.date, body.track)
     if run is None:
         raise HTTPException(status_code=400, detail="no run to complete; fetch /daily first")
@@ -61,7 +65,7 @@ def complete(
         results.append(
             ChallengeResult(
                 challenge_id=cid,
-                type=a.get("type", index.get(cid).type if index.get(cid) else "bug-spot"),
+                type=a.get("type", challenge_by_id[cid].type),
                 correct=a["correct"],
                 attempts=a["attempts"],
                 score=a["score"],

@@ -4,9 +4,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..auth import AuthedUser, get_current_user
-from ..content import ContentIndex, get_content
+from ..content_repository import DailyStackUnavailable, ChallengeRepository, get_challenge_repository, unavailable_status
 from ..models import ChallengePublic, DailyResponse
-from ..seed import build_stack
 from ..service import get_or_create_run, get_or_create_user, validate_date, validate_track
 from ..store import Store, get_store
 from ..config import get_settings
@@ -20,23 +19,22 @@ def get_daily(
     track: str = Query(...),
     auth: AuthedUser = Depends(get_current_user),
     store: Store = Depends(get_store),
-    index: ContentIndex = Depends(get_content),
+    repository: ChallengeRepository = Depends(get_challenge_repository),
 ) -> DailyResponse:
     validate_date(date)
     validate_track(track)
 
     user = get_or_create_user(store, auth)
-    stack_id, ids = build_stack(index, date, track)
-    if not ids:
-        raise HTTPException(status_code=404, detail="no stack available for this track")
+    try:
+        stack = repository.get_stack(date, track)
+    except DailyStackUnavailable as exc:
+        raise HTTPException(status_code=unavailable_status(date), detail=str(exc)) from exc
 
-    run = get_or_create_run(store, user["uid"], date, track, stack_id)
+    run = get_or_create_run(store, user["uid"], date, track, stack.stack_id)
 
     challenges = []
-    for cid in ids:
-        challenge = index.get(cid)
-        if challenge is None:
-            continue
+    for challenge in stack.challenges:
+        cid = challenge.id
         pub: ChallengePublic = challenge.public_payload()
         progress = run["answers"].get(cid)
         if progress:
@@ -50,7 +48,7 @@ def get_daily(
     return DailyResponse(
         date=date,
         track=track,
-        stack_id=stack_id,
+        stack_id=stack.stack_id,
         attempts_per_challenge=get_settings().attempts_per_challenge,
         started_at=run["started_at"],
         completed=run["completed"],

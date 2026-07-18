@@ -60,6 +60,18 @@ def _semantic_checks(raw: Dict) -> List[str]:
     return errors
 
 
+def validate_raw_challenge(raw: Dict, settings: Settings | None = None) -> Challenge:
+    """Validate one generated or authored challenge before it is persisted."""
+    settings = settings or get_settings()
+    errors = sorted(_load_schema(settings).iter_errors(raw), key=lambda e: e.path)
+    if errors:
+        raise ContentError("schema invalid: " + "; ".join(e.message for e in errors))
+    semantic_errors = _semantic_checks(raw)
+    if semantic_errors:
+        raise ContentError("; ".join(semantic_errors))
+    return Challenge(**raw)
+
+
 def load_all(settings: Settings) -> List[Challenge]:
     validator = _load_schema(settings)
     content_dir = Path(settings.content_dir)
@@ -70,17 +82,14 @@ def load_all(settings: Settings) -> List[Challenge]:
     seen_ids: set[str] = set()
     for path in sorted(content_dir.glob("*.json")):
         raw = json.loads(path.read_text(encoding="utf-8"))
-        schema_errors = sorted(validator.iter_errors(raw), key=lambda e: e.path)
-        if schema_errors:
-            msgs = "; ".join(e.message for e in schema_errors)
-            raise ContentError(f"{path.name}: schema invalid: {msgs}")
-        sem = _semantic_checks(raw)
-        if sem:
-            raise ContentError(f"{path.name}: {'; '.join(sem)}")
+        try:
+            challenge = validate_raw_challenge(raw, settings)
+        except ContentError as exc:
+            raise ContentError(f"{path.name}: {exc}") from exc
         if raw["id"] in seen_ids:
             raise ContentError(f"{path.name}: duplicate challenge id {raw['id']}")
         seen_ids.add(raw["id"])
-        challenges.append(Challenge(**raw))
+        challenges.append(challenge)
     if not challenges:
         raise ContentError(f"no challenges found in {content_dir}")
     return challenges

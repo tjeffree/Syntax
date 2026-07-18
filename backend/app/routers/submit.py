@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from ..auth import AuthedUser, get_current_user
 from ..config import Settings, get_settings
-from ..content import ContentIndex, get_content, grade
+from ..content import grade
+from ..content_repository import DailyStackUnavailable, ChallengeRepository, get_challenge_repository, unavailable_status
 from ..models import SubmitRequest, SubmitResponse
 from ..scoring import challenge_score
-from ..seed import build_stack
 from ..service import get_or_create_run, get_or_create_user, validate_date, validate_track
 from ..store import Store, get_store
 from ..time_source import now_ms
@@ -21,23 +21,22 @@ def submit(
     body: SubmitRequest,
     auth: AuthedUser = Depends(get_current_user),
     store: Store = Depends(get_store),
-    index: ContentIndex = Depends(get_content),
+    repository: ChallengeRepository = Depends(get_challenge_repository),
     settings: Settings = Depends(get_settings),
 ) -> SubmitResponse:
     validate_date(body.date)
     validate_track(body.track)
 
-    challenge = index.get(body.challenge_id)
+    try:
+        stack = repository.get_stack(body.date, body.track)
+    except DailyStackUnavailable as exc:
+        raise HTTPException(status_code=unavailable_status(body.date), detail=str(exc)) from exc
+    challenge = next((c for c in stack.challenges if c.id == body.challenge_id), None)
     if challenge is None:
-        raise HTTPException(status_code=404, detail="unknown challenge")
+        raise HTTPException(status_code=400, detail="challenge not in this day's stack")
 
     user = get_or_create_user(store, auth)
-    stack_id, ids = build_stack(index, body.date, body.track)
-    if body.challenge_id not in ids:
-        # Prevent grinding a challenge that isn't part of today's stack.
-        raise HTTPException(status_code=400, detail="challenge not in today's stack")
-
-    run = get_or_create_run(store, user["uid"], body.date, body.track, stack_id)
+    run = get_or_create_run(store, user["uid"], body.date, body.track, stack.stack_id)
     if run["completed"]:
         raise HTTPException(status_code=400, detail="run already completed")
 

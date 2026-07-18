@@ -24,6 +24,13 @@ class Settings(BaseSettings):
     firebase_credentials: str | None = None
     firebase_project_id: str | None = None
 
+    # "seed" keeps the checked-in demo content; "firestore" serves only
+    # generated, published daily stacks.
+    content_mode: str = "seed"
+    daily_stack_retention_days: int = 7
+    openai_model: str = "gpt-5.6-luna"
+    openai_api_key: str | None = None
+
     # Deterministic clock override for tests (ISO-8601). Read via time_source.
     syntax_now: str | None = None
 

@@ -2,3 +2,4 @@
 # against a real Firebase project). Installed on top of requirements.txt.
 -r requirements.txt
 firebase-admin==6.6.0
+openai>=1.0,<2

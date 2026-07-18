@@ -50,5 +50,6 @@ def health() -> dict:
         "version": __version__,
         "auth_mode": settings.auth_mode,
         "store_mode": settings.store_mode,
+        "content_mode": settings.content_mode,
         "challenges": len(get_content().by_id),
     }

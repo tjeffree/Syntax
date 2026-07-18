@@ -10,11 +10,13 @@ AUTH = {"Authorization": "Bearer dev:tester"}
 def _clear_caches() -> None:
     from app.config import get_settings
     from app.content import get_content
+    from app.content_repository import get_challenge_repository
     from app.store import get_store
 
     get_settings.cache_clear()
     get_store.cache_clear()
     get_content.cache_clear()
+    get_challenge_repository.cache_clear()
 
 
 @pytest.fixture
