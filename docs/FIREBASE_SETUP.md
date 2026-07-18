@@ -118,8 +118,10 @@ tree-shaken (GDD §6); dev builds never pull it in.
 The rules live in `firebase/firestore.rules` (GDD §6 sketch: clients get no
 write access to score-bearing collections; leaderboards are world-readable).
 
+Run the Firebase CLI from the repository root, where `firebase.json` and
+`.firebaserc` live.
+
 ```bash
-cd firebase
 cp .firebaserc.example .firebaserc     # then edit in your project id
 firebase deploy --only firestore:rules
 ```
@@ -129,12 +131,12 @@ firebase deploy --only firestore:rules
 ## 7. Host the frontend (optional)
 
 ```bash
-cd frontend && npm run build
-cd ../firebase && firebase deploy --only hosting
+(cd frontend && npm run build)   # produces frontend/dist
+firebase deploy --only hosting   # run from the repository root
 ```
 
-`firebase.json` already points hosting at `../frontend/dist` with an SPA
-rewrite.
+`firebase.json` (at the repository root) already points hosting at
+`frontend/dist` with an SPA rewrite.
 
 ---
 
@@ -165,8 +167,7 @@ hosting.
 If you want to exercise firebase mode without touching a real project:
 
 ```bash
-cd firebase
-firebase emulators:start          # auth :9099, firestore :8080, UI on :4000
+firebase emulators:start          # run from the repository root; auth :9099, firestore :8080, UI on :4000
 ```
 
 Set `FIRESTORE_EMULATOR_HOST=localhost:8080` and

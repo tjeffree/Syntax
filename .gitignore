@@ -14,7 +14,8 @@ frontend/dist/
 **/.env
 **/.env.local
 **/serviceAccount.json
-firebase/.firebaserc
+.firebaserc
+.firebase/
 
 # OS
 .DS_Store

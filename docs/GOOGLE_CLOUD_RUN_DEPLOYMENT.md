@@ -124,7 +124,7 @@ Invoke-WebRequest "$API_URL/health" | Select-Object -ExpandProperty Content
 Expected `/health` fields include `auth_mode: firebase` and `store_mode:
 firestore`. A `503` from `/daily/<future-date>` before publishing is expected.
 Set the frontend’s `VITE_API_BASE` to `$API_URL` and deploy Firebase Hosting
-after the daily jobs have published their initial content.
+(step 8) after the daily jobs have published their initial content.
 
 ## 6. Deploy the generation and cleanup Jobs
 
@@ -216,7 +216,45 @@ gcloud scheduler jobs run syntax-cleanup-content --location=$REGION
 gcloud run jobs executions list --job=syntax-generate-daily --region=$REGION
 ```
 
-## 8. Post-deployment checks and operations
+## 8. Deploy the frontend to Firebase Hosting
+
+The frontend is a static Vite build served from Firebase Hosting, not from
+Cloud Run. Deploy it only after the daily Jobs have published their initial
+content (step 6), so the first sign-in has stacks to load. See
+[FIREBASE_SETUP.md](FIREBASE_SETUP.md) for the one-time web-app registration and
+the full list of `VITE_*` values.
+
+Point the build at the deployed API, then build and publish. `$API_URL` is the
+value captured in step 5; set the remaining Firebase web config values from your
+registered web app.
+
+```powershell
+@"
+VITE_AUTH_MODE=firebase
+VITE_API_BASE=$API_URL
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=$PROJECT_ID.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=$PROJECT_ID
+VITE_FIREBASE_APP_ID=...
+"@ | Set-Content frontend\.env.local
+
+cd frontend
+npm install
+npm run build
+cd ..
+firebase deploy --only hosting
+```
+
+The Firebase CLI runs from the repository root, where `firebase.json` and
+`.firebaserc` live. `firebase.json` already points Hosting at `frontend/dist`
+with an SPA rewrite, so the build output is published as-is. The deployed origin
+(`https://$PROJECT_ID.web.app`) must match the `CORS_ORIGINS` value set on the
+API service in step 5; if it does not, update the service and redeploy.
+
+Whenever the API URL changes or you rebuild the frontend, rerun `npm run build`
+followed by `firebase deploy --only hosting`.
+
+## 9. Post-deployment checks and operations
 
 1. Sign in through the deployed frontend and request today’s Python and
    JavaScript stacks. Confirm each has exactly three challenges and no `answer`

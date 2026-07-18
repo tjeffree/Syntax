@@ -31,7 +31,9 @@ def _prompt(game_date: str, existing_fingerprints: list[str], settings: Settings
     return f"""Create the complete daily Syntax game stack for {game_date}.
 Return exactly six challenge objects: one bug-spot, one parsons, and one big-o
 for each of python and javascript. Use the exact field names and conventions in
-the JSON schema below. Every object must include a server-only answer and a
+the JSON schema below. Set each object's "id" to "{game_date}-<track>-<type>"
+(for example "{game_date}-python-bug-spot") and, if you include "game_date", set
+it to "{game_date}". Every object must include a server-only answer and a
 short, accurate explanation. Challenges must be solvable from their payload,
 have one unambiguous answer, and be distinct from the recent fingerprints below.
 
@@ -90,9 +92,13 @@ def validate_daily_stack(raw_challenges: list[dict[str, Any]], game_date: str, s
         raw = dict(raw)
         raw.pop("game_date", None)  # not part of the gameplay schema
         challenge = validate_raw_challenge(raw, settings)
+        # The id is derived data — fully determined by date, track, and type,
+        # which are already enum-validated above — so assign it deterministically
+        # rather than trust the model to reconstruct the exact composite string.
+        # An unattended job can't retry a human, and a mismatch here was never a
+        # content-quality signal, only a guess about string formatting.
         expected_id = f"{game_date}-{challenge.track}-{challenge.type}"
-        if challenge.id != expected_id:
-            raise ContentError(f"challenge id must be {expected_id}")
+        challenge = challenge.model_copy(update={"id": expected_id})
         if challenge.id in seen_ids:
             raise ContentError(f"duplicate challenge id {challenge.id}")
         seen_ids.add(challenge.id)

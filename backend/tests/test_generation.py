@@ -50,8 +50,18 @@ def test_generated_stack_rejects_duplicate_content(env):
         validate_daily_stack(candidates, DATE, existing_fingerprints={fingerprint(candidates[0])})
 
 
-def test_generated_stack_rejects_wrong_id(env):
+def test_generated_stack_normalizes_id_from_date_track_type(env):
     candidates = _stack()
-    candidates[0]["id"] = "wrong-id"
-    with pytest.raises(ContentError, match="challenge id must be"):
+    candidates[0]["id"] = "whatever-the-model-guessed"
+    challenges = validate_daily_stack(candidates, DATE)
+    # The id is derived deterministically, not taken from the model's output.
+    assert challenges[0].id == f"{DATE}-{challenges[0].track}-{challenges[0].type}"
+
+
+def test_generated_stack_rejects_duplicate_track_type(env):
+    candidates = _stack()
+    # Two challenges collapsing to the same (track, type) now collide on the
+    # derived id, which the duplicate-id gate must still reject.
+    candidates[1] = _challenge("python", "bug-spot")
+    with pytest.raises(ContentError):
         validate_daily_stack(candidates, DATE)
