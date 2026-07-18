@@ -68,9 +68,21 @@ def test_generated_stack_rejects_duplicate_track_type(env):
         validate_daily_stack(candidates, DATE)
 
 
+def test_generated_parsons_widens_maxindent_to_fit_solution(env):
+    candidates = _stack()
+    parsons = candidates[1]  # python parsons
+    parsons["payload"]["indent"] = True
+    parsons["payload"]["maxIndent"] = 2
+    parsons["answer"]["solution"][1]["indent"] = 3  # deeper than declared maxIndent
+    challenges = validate_daily_stack(candidates, DATE)
+    py_parsons = next(c for c in challenges if c.track == "python" and c.type == "parsons")
+    # Accepted, and maxIndent raised so the correct answer is reachable in the UI.
+    assert py_parsons.payload["maxIndent"] == 3
+
+
 def _bad_stack() -> list[dict]:
     stack = _stack()
-    stack[1]["answer"]["solution"][0]["indent"] = 5  # exceeds maxIndent -> rejected
+    stack[0]["answer"]["line"] = 99  # bug-spot line outside the code -> rejected
     return stack
 
 

@@ -82,6 +82,26 @@ def fingerprint(raw: dict[str, Any]) -> str:
     return f"{raw.get('track')}:{raw.get('type')}:{text[:500]}"
 
 
+def _fit_parsons_indent(raw: dict[str, Any]) -> dict[str, Any]:
+    """Widen a generated Parsons payload's maxIndent to fit its own solution.
+
+    maxIndent bounds how far the player can indent a block in the UI, so a
+    solution that indents deeper than maxIndent is literally unreachable and
+    would ship a broken puzzle. The solution is the authority on the depth the
+    code requires, so raise the constraint to fit it rather than reject
+    otherwise-valid code. Only widens, never narrows; non-Parsons pass through.
+    """
+    if raw.get("type") != "parsons":
+        return raw
+    solution = (raw.get("answer") or {}).get("solution") or []
+    deepest = max((int(s.get("indent", 0)) for s in solution), default=0)
+    payload = raw.get("payload") or {}
+    if deepest > int(payload.get("maxIndent", 0)):
+        raw = dict(raw)
+        raw["payload"] = {**payload, "maxIndent": deepest}
+    return raw
+
+
 def validate_daily_stack(raw_challenges: list[dict[str, Any]], game_date: str, settings: Settings | None = None, *, existing_fingerprints: set[str] | None = None) -> list[Challenge]:
     """Apply local schema, semantic, layout, ID, and duplicate release gates."""
     settings = settings or get_settings()
@@ -97,6 +117,7 @@ def validate_daily_stack(raw_challenges: list[dict[str, Any]], game_date: str, s
             raise ContentError("generated challenge has a mismatched game_date")
         raw = dict(raw)
         raw.pop("game_date", None)  # not part of the gameplay schema
+        raw = _fit_parsons_indent(raw)  # accept valid code; widen maxIndent to fit
         challenge = validate_raw_challenge(raw, settings)
         # The id is derived data — fully determined by date, track, and type,
         # which are already enum-validated above — so assign it deterministically
