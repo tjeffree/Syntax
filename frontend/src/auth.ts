@@ -3,8 +3,8 @@
 //  - dev mode: a stable random uid kept in localStorage; token is "dev:<uid>".
 //    Powers anonymous play locally with no Firebase project.
 //  - firebase mode: Firebase Anonymous Auth (later linkable to Google/GitHub
-//    without losing progress). `firebase` is imported lazily so dev builds don't
-//    need the dependency installed.
+//    without losing progress). `firebase` is imported lazily so it's code-split
+//    into its own chunk and only fetched when firebase mode is active.
 
 export interface Auth {
   getToken(): Promise<string>;
@@ -44,10 +44,12 @@ class FirebaseAuthAdapter implements Auth {
   }
 
   private async init(): Promise<void> {
-    const appSpec = "firebase/app";
-    const authSpec = "firebase/auth";
-    const { initializeApp } = await import(/* @vite-ignore */ appSpec);
-    const fbAuth = await import(/* @vite-ignore */ authSpec);
+    // Dynamic imports so Firebase is code-split into its own chunk and only
+    // fetched in firebase mode. Vite resolves and bundles these at build time
+    // (firebase is a declared dependency), so no bare specifier reaches the
+    // browser.
+    const { initializeApp } = await import("firebase/app");
+    const fbAuth = await import("firebase/auth");
     const app = initializeApp({
       apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
       authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -67,8 +69,7 @@ class FirebaseAuthAdapter implements Auth {
 
   async signOut(): Promise<void> {
     await this.ready;
-    const authSpec = "firebase/auth";
-    const fbAuth = await import(/* @vite-ignore */ authSpec);
+    const fbAuth = await import("firebase/auth");
     await fbAuth.signOut(this.auth);
   }
 }
