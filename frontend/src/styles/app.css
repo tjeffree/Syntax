@@ -54,6 +54,48 @@ a { color: var(--blue-link); }
   border-radius: var(--radius-s);
 }
 .appbar .iconbtn:hover { background: var(--bg-inset); }
+.appbar .account-btn {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+/* ---- account menu ---------------------------------------------------- */
+.account { position: relative; display: inline-flex; }
+.account .menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  min-width: 180px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.account .menu[hidden] { display: none; }
+.menu-item {
+  appearance: none;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 10px;
+  min-height: 36px;
+  cursor: pointer;
+}
+.menu-item:hover { background: var(--bg-inset); }
+.menu-item:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--focus-ring); }
 
 /* ---- badges ---------------------------------------------------------- */
 .badge {
@@ -91,17 +133,21 @@ a { color: var(--blue-link); }
   color: var(--text);
 }
 
-/* Narrow screens: one row can't hold brand + tabs + badges + toggle without
-   overflowing (and scrolling the whole page sideways). Wrap the tabs onto their
-   own full-width row; keep brand, badges and the theme toggle on the top row. */
+/* Narrow screens: one row can't hold brand + tabs + badges + account + toggle
+   without overflowing (and scrolling the page sideways). Keep the brand, badges
+   and account on the top row; drop the tabs onto a second row with the theme
+   toggle pinned to its right so a long account name has room to breathe. */
 @media (max-width: 600px) {
   .appbar { flex-wrap: wrap; gap: var(--sp-2); }
   .appbar .brand { order: 1; }
   .appbar .spacer { order: 2; }
   .appbar .badge-streak { order: 3; }
   .appbar .badge-lvl { order: 4; }
-  .appbar .iconbtn { order: 5; }
-  .appbar .tabs { order: 6; flex-basis: 100%; }
+  .appbar .account { order: 5; }
+  /* Full-width, zero-height break forces the tabs onto their own line. */
+  .appbar::before { content: ""; order: 6; flex-basis: 100%; height: 0; }
+  .appbar .tabs { order: 7; }
+  .appbar > .iconbtn { order: 8; margin-left: auto; }
 }
 
 /* ---- panels ---------------------------------------------------------- */
@@ -367,6 +413,23 @@ a { color: var(--blue-link); }
 .status { font-family: var(--font-code); color: var(--text-muted); padding: var(--sp-4) 0; }
 .error { color: var(--red); font-family: var(--font-code); }
 .center { text-align: center; }
+
+/* ---- toast (transient sign-in feedback) ----------------------------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--sp-4);
+  transform: translateX(-50%);
+  z-index: 30;
+  max-width: calc(100vw - 2 * var(--sp-3));
+  background: var(--code-bg);
+  color: var(--code-text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
