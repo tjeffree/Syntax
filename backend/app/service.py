@@ -11,6 +11,7 @@ from fastapi import HTTPException
 
 from .auth import AuthedUser
 from .config import Settings
+from .handles import generate_handle
 from .store.base import Store
 from .time_source import iso, now, now_ms
 
@@ -29,14 +30,14 @@ def validate_track(track: str) -> None:
 
 
 def default_user(auth: AuthedUser) -> Dict:
-    short = auth.uid.replace("-", "")[:6]
-    handle = f"anon-{short}" if auth.anonymous else (auth.display_name or f"dev-{short}")
+    # A generated handle, never the IdP's real name (privacy — the handle is all
+    # we ever show on the leaderboard or in the UI).
+    handle = generate_handle(auth.uid)
     return {
         "uid": auth.uid,
         "handle": handle,
-        "display_name": auth.display_name or handle,
+        "display_name": handle,
         "anonymous": auth.anonymous,
-        "photo_url": auth.photo_url,
         "created_at": iso(now()),
         "streak": {
             "current": 0,
@@ -54,10 +55,17 @@ def get_or_create_user(store: Store, auth: AuthedUser) -> Dict:
         user = default_user(auth)
         store.save_user(user)
         return user
-    # keep profile fields fresh for authenticated users
     changed = False
-    if auth.display_name and user.get("display_name") != auth.display_name:
-        user["display_name"] = auth.display_name
+    # Enforce the generated handle (mirrored into display_name) on every load.
+    # This also scrubs legacy docs created under the old scheme (``anon-…`` / a
+    # real name) the next time the player is seen — no separate migration needed.
+    handle = generate_handle(auth.uid)
+    for key in ("handle", "display_name"):
+        if user.get(key) != handle:
+            user[key] = handle
+            changed = True
+    # Drop any real name persisted by an earlier version.
+    if user.pop("photo_url", None) is not None:
         changed = True
     if not auth.anonymous and user.get("anonymous"):
         user["anonymous"] = False

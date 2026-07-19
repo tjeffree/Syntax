@@ -1,5 +1,5 @@
 import { Api, ApiError } from "./api";
-import type { Auth } from "./auth";
+import { AuthCancelled, type Auth, type ProviderId } from "./auth";
 import { createChallenge, TYPE_TITLE } from "./challenges/registry";
 import type { ChallengeComponent } from "./challenges/types";
 import { clear, h, mount } from "./dom";
@@ -23,6 +23,7 @@ const TRACK_KEY = "syntax.track";
 
 export class App {
   private api: Api;
+  private auth: Auth;
   private root: HTMLElement;
 
   private me: MeResponse | null = null;
@@ -39,9 +40,11 @@ export class App {
 
   private appbar!: HTMLElement;
   private view!: HTMLElement;
+  private closeAccountMenu: (() => void) | null = null;
 
   constructor(root: HTMLElement, auth: Auth) {
     this.root = root;
+    this.auth = auth;
     this.api = new Api(auth);
     const saved = localStorage.getItem(TRACK_KEY) as Track | null;
     this.track = saved && TRACKS.includes(saved) ? saved : "python";
@@ -53,8 +56,15 @@ export class App {
     this.view = h("main", {});
     shell.append(this.appbar, this.view);
     mount(this.root, shell);
+    await this.refresh("connecting…");
+  }
 
-    this.setStatus("connecting…");
+  // Fetch identity, render the appbar, then load the day. Shared by first boot
+  // and by a sign-in/out, after which the uid — and so the whole run/profile —
+  // may have changed.
+  private async refresh(status: string): Promise<void> {
+    this.stopTimers();
+    this.setStatus(status);
     try {
       this.me = await this.api.me();
     } catch (e) {
@@ -67,6 +77,7 @@ export class App {
 
   // ---- appbar --------------------------------------------------------- #
   private renderAppbar(): void {
+    this.closeAccountMenu?.(); // drop any listener bound to the old appbar nodes
     const s = this.me?.streak;
     const lvl = this.me?.tracks[this.track]?.level ?? 1;
 
@@ -94,12 +105,96 @@ export class App {
         ? h("span", { class: "badge badge-streak", title: "daily streak" }, `⚑ ${s.current}`)
         : null,
       h("span", { class: "badge badge-lvl mono", title: `${this.track} level` }, `lvl ${lvl}`),
+      this.renderAccount(),
       h(
         "button",
         { class: "iconbtn", title: "toggle theme", "aria-label": "toggle theme", onclick: () => toggleTheme() },
         "◐"
       )
     );
+  }
+
+  // ---- account / sign-in --------------------------------------------- #
+  private renderAccount(): HTMLElement | null {
+    // Dev auth has no interactive providers — nothing to render.
+    if (this.auth.providers.length === 0) return null;
+    const signedIn = this.me != null && !this.me.anonymous;
+
+    const items = signedIn
+      ? [h("button", { class: "menu-item", role: "menuitem", onclick: () => this.onSignOut() }, "sign out")]
+      : this.auth.providers.map((p) =>
+          h(
+            "button",
+            { class: "menu-item", role: "menuitem", onclick: () => this.onSignIn(p) },
+            p === "google" ? "continue with Google" : "continue with GitHub"
+          )
+        );
+    const menu = h("div", { class: "menu", role: "menu", hidden: true }, ...items);
+
+    const wrap = h(
+      "div",
+      { class: "account" },
+      h(
+        "button",
+        {
+          class: "iconbtn account-btn",
+          "aria-haspopup": "menu",
+          "aria-expanded": "false",
+          title: signedIn ? "account" : "sign in to save progress",
+          onclick: (e: Event) => {
+            e.stopPropagation();
+            this.toggleAccountMenu(wrap);
+          },
+        },
+        signedIn ? `${this.me!.display_name} ▾` : "sign in ▾"
+      ),
+      menu
+    );
+    return wrap;
+  }
+
+  private toggleAccountMenu(wrap: HTMLElement): void {
+    const menu = wrap.querySelector<HTMLElement>(".menu")!;
+    const toggle = wrap.querySelector<HTMLElement>(".account-btn")!;
+    if (!menu.hasAttribute("hidden")) {
+      this.closeAccountMenu?.();
+      return;
+    }
+    menu.removeAttribute("hidden");
+    toggle.setAttribute("aria-expanded", "true");
+    const close = () => {
+      menu.setAttribute("hidden", "");
+      toggle.setAttribute("aria-expanded", "false");
+      document.removeEventListener("click", close);
+      this.closeAccountMenu = null;
+    };
+    this.closeAccountMenu = close;
+    // Close on the next click anywhere else. The toggle's onclick calls
+    // stopPropagation, so the click that opened the menu never reaches document
+    // and can't immediately re-close it.
+    document.addEventListener("click", close);
+  }
+
+  private async onSignIn(provider: ProviderId): Promise<void> {
+    try {
+      await this.auth.signIn(provider);
+    } catch (e) {
+      if (e instanceof AuthCancelled) return; // user backed out — no-op
+      this.toast(e instanceof Error ? e.message : "sign-in failed");
+      return;
+    }
+    await this.refresh("syncing your profile…");
+  }
+
+  private async onSignOut(): Promise<void> {
+    await this.auth.signOut();
+    await this.refresh("syncing your profile…");
+  }
+
+  private toast(msg: string): void {
+    const t = h("div", { class: "toast", role: "status" }, msg);
+    document.body.append(t);
+    setTimeout(() => t.remove(), 4000);
   }
 
   private async switchTrack(t: Track): Promise<void> {
