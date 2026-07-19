@@ -91,6 +91,19 @@ a { color: var(--blue-link); }
   color: var(--text);
 }
 
+/* Narrow screens: one row can't hold brand + tabs + badges + toggle without
+   overflowing (and scrolling the whole page sideways). Wrap the tabs onto their
+   own full-width row; keep brand, badges and the theme toggle on the top row. */
+@media (max-width: 600px) {
+  .appbar { flex-wrap: wrap; gap: var(--sp-2); }
+  .appbar .brand { order: 1; }
+  .appbar .spacer { order: 2; }
+  .appbar .badge-streak { order: 3; }
+  .appbar .badge-lvl { order: 4; }
+  .appbar .iconbtn { order: 5; }
+  .appbar .tabs { order: 6; flex-basis: 100%; }
+}
+
 /* ---- panels ---------------------------------------------------------- */
 .panel {
   background: var(--bg-panel);
@@ -239,14 +252,39 @@ a { color: var(--blue-link); }
   color: var(--code-text);
   border: 1px solid var(--code-block-border);
   border-radius: var(--radius-s);
-  padding: 6px 8px;
+  padding: 6px 4px 6px 0;
   font-family: var(--font-code);
   font-size: 13px;
+  touch-action: pan-y; /* let the page scroll vertically; grip handles the rest */
 }
-.pblock.dragging { border-color: var(--blue); opacity: 0.6; }
-.pblock.drop-target { box-shadow: inset 0 2px 0 var(--blue); }
-.pblock .grip { color: var(--code-gutter); cursor: grab; user-select: none; letter-spacing: -2px; }
-.pblock .pcode { flex: 1; white-space: pre; overflow-x: auto; }
+.pblock.dragging {
+  border-color: var(--blue);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  position: relative;
+  z-index: 1;
+}
+.pblock .grip {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  color: var(--code-gutter);
+  cursor: grab;
+  user-select: none;
+  letter-spacing: -2px;
+  touch-action: none; /* claim the gesture so drag/swipe never scrolls the page */
+}
+.pblock.dragging .grip { cursor: grabbing; }
+/* min-width:0 lets the code shrink inside the flex row and scroll instead of
+   clipping; the buttons stay pinned and always visible. */
+.pblock .pcode {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: pre;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
 .pblock .pctrls { display: flex; gap: 4px; flex: none; }
 .pctrls button {
   min-width: 32px; min-height: 32px;
@@ -260,6 +298,13 @@ a { color: var(--blue-link); }
 .pctrls button:hover { background: #37393a; }
 .pctrls button[disabled] { opacity: 0.35; cursor: not-allowed; }
 .parsons-hint { margin-top: var(--sp-2); font-size: 12px; }
+
+/* Narrow screens: drop the tap-fallback buttons and drive everything from the
+   whole-row drag (reorder vertically, swipe horizontally to indent). */
+@media (max-width: 600px) {
+  .pblock .pctrls { display: none; }
+  .pblock { padding-right: 8px; }
+}
 
 /* ---- result marks + explanation ------------------------------------- */
 .result {
